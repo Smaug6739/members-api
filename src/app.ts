@@ -5,11 +5,13 @@ import { Iconfig } from './types'
 
 
 export class App {
-    public app: express.Application;
+    private app: express.Application;
     public port: number;
+    public config: Iconfig;
     constructor(config: Iconfig) {
         this.app = express();
         this.port = config.port;
+        this.config = config
         console.log('Starting...')
     }
     private handleRoutes(): void {
