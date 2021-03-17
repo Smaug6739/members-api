@@ -10,6 +10,7 @@ export interface Iconfig {
         readonly password: string;
         readonly database: string;
     }
+    readonly secret: string
 }
 //Router
 export interface Iroute {

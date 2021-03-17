@@ -3,7 +3,7 @@ import { IObject } from '../../../types';
 import { hash, compare } from "bcrypt";
 export class MemberClass {
 
-    public login(email: string, password: string): Promise<IObject | Error> {
+    public login(email: string, password: string): Promise<IObject> {
         return new Promise((resolve, reject) => {
             if (!email || email && email.trim() === '') return;
             if (!password || password && password.trim() === '') return;
