@@ -6,7 +6,7 @@ import { config } from '../../config';
 const Members = new MemberClass();
 
 export function login(req: IObject, res: IObject): void {
-    Members.login(req.body.email, req.body.password)
+    Members.auth(req.body.email, req.body.password)
         .then(result => {
             const token = sign({
                 exp: Math.floor(Math.floor(Date.now() / 1000) + (6 * 60 * 60)),
@@ -24,6 +24,17 @@ export function login(req: IObject, res: IObject): void {
                 user: result
             }))
         })
+        .catch(error => res.json(checkAndChange(error.message)))
+}
+
+export function getMember(req: IObject, res: IObject): void {
+    console.log(req.user)
+    const userInfos: IUserInfos = {
+        id: req.user.id,
+        permissions: req.user.permissions
+    }
+    Members.get(userInfos)
+        .then(result => res.status(200).json(checkAndChange(result)))
         .catch(error => res.json(checkAndChange(error.message)))
 }
 export function createMember(req: IObject, res: IObject): void {
@@ -63,6 +74,16 @@ export function updateMember(req: IObject, res: IObject): void {
         permissions: req.user.permissions
     }
     Members.put(userInfos, newSettings)
-        .then(result => res.status(201).json(checkAndChange(result)))
+        .then(result => res.status(200).json(checkAndChange(result)))
+        .catch(error => res.json(checkAndChange(error.message)))
+}
+
+export function deleteMember(req: IObject, res: IObject): void {
+    const userInfos: IUserInfos = {
+        id: req.user.id,
+        permissions: req.user.permissions
+    }
+    Members.delete(userInfos, req.params.user)
+        .then(result => res.status(200).json(checkAndChange(result)))
         .catch(error => res.json(checkAndChange(error.message)))
 }

@@ -6,7 +6,12 @@ const MemberRouter: Router = Router();
 
 MemberRouter.post('/', MemberCtrl.createMember);
 MemberRouter.post('/login', MemberCtrl.login);
+
+MemberRouter.get('/:userId', auth, MemberCtrl.getMember);
+
 MemberRouter.put('/:userId', auth, MemberCtrl.updateMember);
+
+MemberRouter.delete('/:user/:userId', auth, MemberCtrl.deleteMember)
 
 export const infos: Iroute = {
     route: "members",
