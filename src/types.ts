@@ -43,7 +43,8 @@ export interface IMember {
     last_name: string,
     age: number,
     phone_number: string,
-    email: string
+    email: string,
+    date_insert?: number
 }
 
 export interface IUserInfos {
