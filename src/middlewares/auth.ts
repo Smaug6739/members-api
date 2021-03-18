@@ -1,4 +1,4 @@
-import { IObject } from '../types';
+import { IObject, IUserInfos } from '../types';
 import { verify } from 'jsonwebtoken';
 import { config } from '../config';
 import { error } from '../utils/functions';
@@ -13,6 +13,10 @@ export default (req: IObject, res: IObject, next: any) => {
         const userAuth = req.params.userId;
         if (!userAuth) throw 'Missing userId param in request';
         if (userId == userAuth || userPermissions >= 3) {
+            req.user = {
+                id: userId,
+                permissions: userPermissions
+            }
             next()
         }
         else throw 'bad authentification';

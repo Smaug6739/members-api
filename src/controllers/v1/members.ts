@@ -1,5 +1,5 @@
 import { MemberClass } from '../../assets/classes/v1/member';
-import { IObject } from '../../types';
+import { IObject, IMember, IUserInfos } from '../../types';
 import { checkAndChange } from '../../utils/functions';
 import { sign } from 'jsonwebtoken';
 import { config } from '../../config';
@@ -45,19 +45,24 @@ export function createMember(req: IObject, res: IObject): void {
 }
 
 export function updateMember(req: IObject, res: IObject): void {
-    Members.put(
-        req.body.user_id,
-        req.body.nickname,
-        req.body.permissions,
-        req.body.banichement,
-        req.body.avatar,
-        req.body.password,
-        req.body.first_name,
-        req.body.last_name,
-        req.body.age,
-        req.body.phone_number,
-        req.body.email,
-    )
+    const newSettings: IMember = {
+        id: req.body.user_id,
+        nickname: req.body.nickname,
+        permissions: req.body.permissions,
+        banishment: req.body.banishment,
+        avatar: req.body.avatar,
+        password: req.body.password,
+        first_name: req.body.first_name,
+        last_name: req.body.last_name,
+        age: req.body.age,
+        phone_number: req.body.phone_number,
+        email: req.body.email
+    }
+    const userInfos: IUserInfos = {
+        id: req.user.id,
+        permissions: req.user.permissions
+    }
+    Members.put(userInfos, newSettings)
         .then(result => res.status(201).json(checkAndChange(result)))
         .catch(error => res.json(checkAndChange(error.message)))
 }

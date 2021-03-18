@@ -26,7 +26,27 @@ export interface IResponce {
     result?: any
     message?: string
 }
-
+//Object
 export interface IObject {
     [index: string]: any
+}
+
+//Member
+export interface IMember {
+    id: number,
+    nickname: string,
+    permissions: number,
+    banishment: number,
+    avatar: string,
+    password: string,
+    first_name: string,
+    last_name: string,
+    age: number,
+    phone_number: string,
+    email: string
+}
+
+export interface IUserInfos {
+    id: number,
+    permissions: number
 }
