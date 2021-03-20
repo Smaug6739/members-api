@@ -13,7 +13,7 @@ This repo contains a simple API allowing registration, authentication, updates, 
 8. Start API with `node dist/main.js` command
 
 Following these operations, if the API is functioning correctly, it can be accessed at the address:
-http://127.0.0.1:8080 where http://localhost:8080
+http://127.0.0.1:3000 where http://localhost:3000
 
 # Contribution 
 
