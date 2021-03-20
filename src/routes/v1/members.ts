@@ -11,7 +11,7 @@ MemberRouter.get('/:userId', auth, MemberCtrl.getMember);
 
 MemberRouter.put('/:userId', auth, MemberCtrl.updateMember);
 
-MemberRouter.delete('/:user/:userId', auth, MemberCtrl.deleteMember)
+MemberRouter.delete('/:userId', auth, MemberCtrl.deleteMember)
 
 export const infos: Iroute = {
     route: "members",

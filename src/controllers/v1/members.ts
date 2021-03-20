@@ -28,7 +28,6 @@ export function login(req: IObject, res: IObject): void {
 }
 
 export function getMember(req: IObject, res: IObject): void {
-    console.log(req.user)
     const userInfos: IUserInfos = {
         id: req.user.id,
         permissions: req.user.permissions
