@@ -1,7 +1,35 @@
 {
+  "name": "frontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "basic-auth": "^2.0.1",
+    "debug": "^2.6.9",
+    "depd": "^2.0.0",
+    "ee-first": "^1.1.1",
+    "express": "^4.17.1",
+    "ms": "^2.0.0",
+    "on-finished": "^2.3.0",
+    "on-headers": "^1.0.2",
+    "safe-buffer": "^5.1.2"
+  },
   "devDependencies": {
     "@types/express": "^4.17.11",
     "@types/node": "^14.14.35",
     "morgan": "^1.10.0"
-  }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SmaugDev/members-api.git"
+  },
+  "author": "SmaugDev",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SmaugDev/members-api/issues"
+  },
+  "homepage": "https://github.com/SmaugDev/members-api#readme"
 }
