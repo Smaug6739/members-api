@@ -16,6 +16,7 @@ Permissions required : None
 {
     "nickname": "[1 to 250 chars]",
     "avatar": "[1 to 250 chars]",
+    "password": "[1 to 250 chars]",
     "first_name": "[1 to 250 chars]",
     "last_name": "[1 to 250 chars]",
     "age": "[number]",
