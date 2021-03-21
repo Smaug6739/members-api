@@ -19,7 +19,7 @@ Permissions required : None
     "password": "[1 to 250 chars]",
     "first_name": "[1 to 250 chars]",
     "last_name": "[1 to 250 chars]",
-    "age": "[number]",
+    "age": "[1 to 3 chars]",
     "phone_number": "[1 to 30 chars]",
     "email": "[1 to 250 chars]"
 }
