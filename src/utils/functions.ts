@@ -23,6 +23,6 @@ export function isErr(param: any): Boolean {
 }
 
 export function checkAndChange(this: any, obj: any): void {
-    if (this.isErr(obj)) return this.error(obj)
+    if (this.isErr(obj)) return this.error(obj.message || obj)
     else return this.success(obj)
 }

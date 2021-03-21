@@ -34,14 +34,14 @@ export interface IObject {
 //Member
 export interface IMember {
     id: number,
-    nickname: string,
+    nickname: string | null,
     permissions: number,
     banishment: number,
     avatar: string,
     password: string,
     first_name: string,
     last_name: string,
-    age: number,
+    age: string,
     phone_number: string,
     email: string,
     date_insert?: number

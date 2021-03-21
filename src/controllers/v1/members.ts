@@ -24,17 +24,26 @@ export function login(req: IObject, res: IObject): void {
                 user: result
             }))
         })
-        .catch(error => res.json(checkAndChange(error.message)))
+        .catch(error => res.json(checkAndChange(error)))
 }
 
+export function getMembers(req: IObject, res: IObject): void {
+    const userInfos: IUserInfos = {
+        id: req.user.id,
+        permissions: req.user.permissions
+    }
+    Members.getAll(userInfos, req.params.page)
+        .then(result => res.status(200).json(checkAndChange(result)))
+        .catch(error => res.json(checkAndChange(error)))
+}
 export function getMember(req: IObject, res: IObject): void {
     const userInfos: IUserInfos = {
         id: req.user.id,
         permissions: req.user.permissions
     }
-    Members.get(userInfos)
+    Members.get(req.params.userId)
         .then(result => res.status(200).json(checkAndChange(result)))
-        .catch(error => res.json(checkAndChange(error.message)))
+        .catch(error => res.json(checkAndChange(error)))
 }
 export function createMember(req: IObject, res: IObject): void {
     Members.add(
@@ -51,7 +60,7 @@ export function createMember(req: IObject, res: IObject): void {
         Date.now()
     )
         .then(result => res.status(201).json(checkAndChange(result)))
-        .catch(error => res.json(checkAndChange(error.message)))
+        .catch(error => res.json(checkAndChange(error)))
 }
 
 export function updateMember(req: IObject, res: IObject): void {
@@ -72,9 +81,9 @@ export function updateMember(req: IObject, res: IObject): void {
         id: req.user.id,
         permissions: req.user.permissions
     }
-    Members.put(userInfos, newSettings)
+    Members.put(req.params.userId, newSettings)
         .then(result => res.status(200).json(checkAndChange(result)))
-        .catch(error => res.json(checkAndChange(error.message)))
+        .catch(error => res.json(checkAndChange(error)))
 }
 
 export function deleteMember(req: IObject, res: IObject): void {
@@ -82,7 +91,7 @@ export function deleteMember(req: IObject, res: IObject): void {
         id: req.user.id,
         permissions: req.user.permissions
     }
-    Members.delete(userInfos, req.params.user)
+    Members.delete(userInfos, req.params.userId)
         .then(result => res.status(200).json(checkAndChange(result)))
-        .catch(error => res.json(checkAndChange(error.message)))
+        .catch(error => res.json(checkAndChange(error)))
 }

@@ -7,6 +7,7 @@ const MemberRouter: Router = Router();
 MemberRouter.post('/', MemberCtrl.createMember);
 MemberRouter.post('/login', MemberCtrl.login);
 
+MemberRouter.get('/all/:page', auth, MemberCtrl.getMembers);
 MemberRouter.get('/:userId', auth, MemberCtrl.getMember);
 
 MemberRouter.put('/:userId', auth, MemberCtrl.updateMember);

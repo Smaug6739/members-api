@@ -10,20 +10,34 @@ export class MemberClass {
             if (!password || password && password.trim() === '') return;
             db.query('SELECT * FROM members WHERE email = ? LIMIT 1', [email], (err, result: Array<IObject>): void => {
                 if (err) return reject(new Error(err.message))
-                compare(password, result[0].password).then((valid: Boolean): void => {
-                    if (!valid) return reject(new Error('Bad password.'))
-                    else return resolve(result[0])
-                })
+                if (result[0]) {
+                    compare(password, result[0].password).then((valid: Boolean): void => {
+                        if (!valid) return reject(new Error('Bad email/password.'))
+                        else return resolve(result[0])
+                    })
+                } else return reject(new Error('Bad email/password.'))
             })
         })
     }
 
-    public get(user: IUserInfos): Promise<IObject> {
+    public get(userId: number): Promise<IObject> {
         return new Promise((resolve, reject) => {
-            if (!user || !user.id) return reject(new Error('Missing user param.'))
-            db.query('SELECT * FROM members WHERE id = ? LIMIT 1', [user.id], (err, result) => {
+            if (!userId) return reject(new Error('Missing userId param.'))
+            db.query('SELECT * FROM members WHERE id = ? LIMIT 1', [userId], (err, result) => {
                 if (err) return reject(new Error(err.message))
                 resolve(result[0])
+            })
+        })
+    }
+
+    public getAll(user: IUserInfos, page: (string)): Promise<IObject> {
+        return new Promise((resolve, reject) => {
+            const offset = (parseInt(page) * 20) - 20
+            if (!user || !user.id) return reject(new Error('Missing user header.'))
+            if (!user.permissions || user.permissions && user.permissions < 3) return reject(new Error("Bad permissions"))
+            db.query('SELECT * FROM members LIMIT 20 OFFSET ?', [offset], (err, result) => {
+                if (err) return reject(new Error(err.message))
+                resolve(result)
             })
         })
     }
@@ -36,7 +50,7 @@ export class MemberClass {
         password: string,
         first_name: string,
         last_name: string,
-        age: number,
+        age: string,
         phone_number: string,
         email: string,
         dateInsert: number
@@ -53,10 +67,6 @@ export class MemberClass {
             if (!phone_number || phone_number && phone_number.trim() === '') return reject(new Error("Missing phone number param."))
             if (!email || email && email.trim() === '') return reject(new Error("Missing email param."))
             if (!dateInsert) return reject(new Error("Missing date insert param."))
-            permissions = parseInt(`${permissions}`)
-            banishment = parseInt(`${banishment}`)
-            age = parseInt(`${age}`)
-            dateInsert = parseInt(`${dateInsert}`)
             if (typeof nickname !== 'string') return reject(new Error("nickname must be a string"))
             if (typeof permissions !== 'number') return reject(new Error("permissions must be a number"))
             if (typeof banishment !== 'number') return reject(new Error("banishment must be a number"))
@@ -64,7 +74,7 @@ export class MemberClass {
             if (typeof password !== 'string') return reject(new Error("password must be a string"))
             if (typeof first_name !== 'string') return reject(new Error("first_name must be a string"))
             if (typeof last_name !== 'string') return reject(new Error("last_Name must be a string"))
-            if (typeof age !== 'number') return reject(new Error("age must be a number"))
+            if (typeof age !== 'string') return reject(new Error("age must be a number"))
             if (typeof phone_number !== 'string') return reject(new Error("phone_number must be a string"))
             if (typeof email !== 'string') return reject(new Error("email must be a string"))
             hash(password, 10)
@@ -79,12 +89,12 @@ export class MemberClass {
                 })
         })
     }
-    public put(user: IUserInfos, newSettings: IMember): Promise<IObject | Error> {
+    public put(userId: number, newSettings: IMember): Promise<IObject | Error> {
         return new Promise<IObject | Error>((resolve, reject) => {
             let passwordHash: string;
+            console.log(userId)
             if (newSettings.permissions) newSettings.permissions = parseInt(`${newSettings.permissions}`)
             if (newSettings.banishment) newSettings.banishment = parseInt(`${newSettings.banishment}`)
-            if (newSettings.age) newSettings.age = parseInt(`${newSettings.age}`)
             if (newSettings.nickname && typeof newSettings.nickname !== 'string') return reject(new Error("nickname must be a string"))
             if (newSettings.permissions && typeof newSettings.permissions !== 'number') return reject(new Error("permissions must be a number"))
             if (newSettings.banishment && typeof newSettings.banishment !== 'number') return reject(new Error("banishment must be a number"))
@@ -92,16 +102,17 @@ export class MemberClass {
             if (newSettings.password && typeof newSettings.password !== 'string') return reject(new Error("password must be a string"))
             if (newSettings.first_name && typeof newSettings.first_name !== 'string') return reject(new Error("first_name must be a string"))
             if (newSettings.last_name && typeof newSettings.last_name !== 'string') return reject(new Error("last_Name must be a string"))
-            if (newSettings.age && typeof newSettings.age !== 'number') return reject(new Error("age must be a number"))
+            if (newSettings.age && typeof newSettings.age !== 'string') return reject(new Error("age must be a number"))
             if (newSettings.phone_number && typeof newSettings.phone_number !== 'string') return reject(new Error("phone_number must be a string"))
             if (newSettings.email && typeof newSettings.email !== 'string') return reject(new Error("email must be a string"))
-            db.query('SELECT * FROM members WHERE id = ? LIMIT 1', [user.id], async (err, result: Array<IObject>) => {
+            db.query('SELECT * FROM members WHERE id = ? LIMIT 1', [userId], async (err, result: Array<IObject>) => {
                 if (err) return reject(new Error(err.message))
                 if (newSettings.permissions && newSettings.permissions !== result[0].permissions && result[0].permissions != 4) return reject(new Error('You don\'t have permissions for change permissions value.'))
                 if (newSettings.banishment && result[0].permissions <= 3) return reject(new Error('You don\'t have permissions for change banishment value.'))
                 if (newSettings.password) passwordHash = await hash(newSettings.password, 10)
+                else passwordHash = result[0].password
                 const userSettings: IMember = {
-                    id: user.id,
+                    id: result[0].id,
                     nickname: newSettings.nickname || result[0].nickname,
                     permissions: newSettings.permissions || result[0].permissions,
                     banishment: newSettings.banishment || result[0].banishment,
@@ -115,7 +126,7 @@ export class MemberClass {
                     date_insert: result[0].date_insert
                 }
                 db.query('UPDATE `members` SET `nickname` = ?, `permissions` = ?, `banishment` = ?, `avatar` = ?, `password` = ?, `first_name` = ?, `last_name` = ?, `age` = ?, `phone_number` = ?, `email` = ?, `date_insert` = ? WHERE (`id` = ?);',
-                    [userSettings.nickname, userSettings.permissions, userSettings.banishment, userSettings.avatar, userSettings.password, userSettings.first_name, userSettings.last_name, userSettings.age, userSettings.phone_number, userSettings.email, userSettings.date_insert, user.id],
+                    [userSettings.nickname, userSettings.permissions, userSettings.banishment, userSettings.avatar, userSettings.password, userSettings.first_name, userSettings.last_name, userSettings.age, userSettings.phone_number, userSettings.email, userSettings.date_insert, userId],
                     (err, result) => {
                         if (err) return reject(new Error(err.message))
                         resolve(userSettings)

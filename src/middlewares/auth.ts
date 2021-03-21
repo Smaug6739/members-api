@@ -8,7 +8,6 @@ export default (req: IObject, res: IObject, next: any) => {
         if (!req.headers || req.headers && !req.headers.authorization) throw 'Missing authorization header.';
         const headerToken = req.headers.authorization.split(' ')[1];
         const headerUser = req.headers.authorization.split(' ')[0];
-
         if (!headerUser) throw 'Missing userId in header authorization';
         if (!headerToken) throw 'Missing token in header authorization'
 
@@ -27,6 +26,7 @@ export default (req: IObject, res: IObject, next: any) => {
         }
         else throw 'bad authentification';
     } catch (err) {
+        console.log(err)
         res.status(401).json(error(err));
     }
 }
