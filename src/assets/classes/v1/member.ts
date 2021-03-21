@@ -75,7 +75,7 @@ export class MemberClass {
                     })
                 })
                 .catch((err: IObject) => {
-                    reject(new Error('erreur lors du hachage du mot de passe'))
+                    reject(new Error('error whit password hash'))
                 })
         })
     }
@@ -114,13 +114,10 @@ export class MemberClass {
                     email: newSettings.email || result[0].email,
                     date_insert: result[0].date_insert
                 }
-                console.log("Here")
                 db.query('UPDATE `members` SET `nickname` = ?, `permissions` = ?, `banishment` = ?, `avatar` = ?, `password` = ?, `first_name` = ?, `last_name` = ?, `age` = ?, `phone_number` = ?, `email` = ?, `date_insert` = ? WHERE (`id` = ?);',
                     [userSettings.nickname, userSettings.permissions, userSettings.banishment, userSettings.avatar, userSettings.password, userSettings.first_name, userSettings.last_name, userSettings.age, userSettings.phone_number, userSettings.email, userSettings.date_insert, user.id],
                     (err, result) => {
                         if (err) return reject(new Error(err.message))
-                        console.log(err)
-                        console.log(result)
                         resolve(userSettings)
                     })
             })
@@ -128,14 +125,10 @@ export class MemberClass {
     }
     public delete(user: IUserInfos, userDelete: number): Promise<IObject | Error> {
         return new Promise<IObject | Error>((resolve, reject) => {
-            if (!user) return reject(new Error("Missing user param"))
-            if (user.id == userDelete || user.permissions >= 3) {
-                db.query('DELETE FROM members WHERE id = ?', [userDelete], (err, result) => {
-                    if (err) return reject(new Error(err.message))
-                    resolve(result)
-                })
-            } else return reject(new Error('Bad permissions'))
-
+            db.query('DELETE FROM members WHERE id = ?', [userDelete], (err, result) => {
+                if (err) return reject(new Error(err.message))
+                resolve(result)
+            })
         })
     }
 }
