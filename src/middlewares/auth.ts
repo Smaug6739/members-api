@@ -14,7 +14,7 @@ export default (req: IObject, res: IObject, next: any) => {
         for (let permission of config.permissions) {
             const rest = decoded.userPermissions % permission.value;
             if (rest == 0 && decoded.userPermissions != 0) {
-                userPermissions.push(permission);
+                userPermissions.push(permission.permission);
                 break;
             }
             if (rest < decoded.userPermissions) {

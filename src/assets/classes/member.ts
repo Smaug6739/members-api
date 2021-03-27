@@ -110,8 +110,8 @@ export class MemberClass {
             if (newSettings.email && typeof newSettings.email !== 'string') return reject(new Error("email must be a string"))
             db.query('SELECT * FROM members WHERE id = ? LIMIT 1', [userId], async (err, result: Array<IObject>) => {
                 if (err) return reject(new Error(err.message))
-                if (newSettings.permissions && newSettings.permissions !== result[0].permissions && result[0].permissions != 4) return reject(new Error('You don\'t have permissions for change permissions value.'))
-                if (newSettings.banishment && result[0].permissions <= 3) return reject(new Error('You don\'t have permissions for change banishment value.'))
+                if (newSettings.permissions && !hasPermissions(user.permissions, ['ADMINISTRATOR'])) return reject(new Error('You don\'t have permissions for change permissions value.'))
+                if (newSettings.banishment && !hasPermissions(user.permissions, ['BAN_MEMBERS'])) return reject(new Error('You don\'t have permissions for change banishment value.'))
                 if (newSettings.password) passwordHash = await hash(newSettings.password, 10)
                 else passwordHash = result[0].password
                 const userSettings: IMember = {
