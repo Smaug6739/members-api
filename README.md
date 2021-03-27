@@ -28,4 +28,4 @@ If you want to contribute to the project, report bugs or suggest improvements yo
 
 ## Permissions
 
-This project has an <a href="./LICENSE"> MIT license </a>
+This project has an <a href="./LICENSE"> MIT license </a>.

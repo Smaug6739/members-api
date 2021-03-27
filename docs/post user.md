@@ -12,16 +12,16 @@ Permissions required : None
 
 **Data :**
 
-```json
+```js
 {
-    "nickname": "[1 to 250 chars]",
-    "avatar": "[1 to 250 chars]",
-    "password": "[1 to 250 chars]",
-    "first_name": "[1 to 250 chars]",
-    "last_name": "[1 to 250 chars]",
-    "age": "[1 to 3 chars]",
-    "phone_number": "[1 to 30 chars]",
-    "email": "[1 to 250 chars]"
+    nickname: "[1 to 250 chars]",
+    avatar: "[1 to 250 chars]",
+    password: "[1 to 250 chars]",
+    first_name: "[1 to 250 chars]",
+    last_name: "[1 to 250 chars]",
+    age: "[1 to 3 chars]",
+    phone_number: "[1 to 30 chars]",
+    email: "[1 to 250 chars]"
 }
 ```
 

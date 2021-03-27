@@ -12,15 +12,19 @@ Permissions required : None
 
 **Data :**
 
-```json
+```js
 {
-    "nickname": "[1 to 250 chars]",
-    "avatar": "[1 to 250 chars]",
-    "first_name": "[1 to 250 chars]",
-    "last_name": "[1 to 250 chars]",
-    "age": "[number]",
-    "phone_number": "[1 to 30 chars]",
-    "email": "[1 to 250 chars]"
+    nickname: "[1 to 250 chars]",
+    avatar: "[1 to 250 chars]", 
+    permissions: "[number]",
+    banishment: "[timestamp]",
+    avatar : "[1 to 200 chars]",
+    password: "[1 to 50 chars]",
+    first_name: "[1 to 250 chars]",
+    last_name: "[1 to 250 chars]",
+    age: "[number]",
+    phone_number: "[1 to 30 chars]",
+    email: "[1 to 250 chars]"
 }
 ```
 
