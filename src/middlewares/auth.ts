@@ -5,28 +5,30 @@ import { error } from '../utils/functions';
 
 export default (req: IObject, res: IObject, next: any) => {
     try {
-        if (!req.headers || req.headers && !req.headers.authorization) throw 'Missing authorization header.';
-        const headerToken = req.headers.authorization.split(' ')[1];
-        const headerUser = req.headers.authorization.split(' ')[0];
-        if (!headerUser) throw 'Missing userId in header authorization';
-        if (!headerToken) throw 'Missing token in header authorization'
-
-        const decoded: any = verify(headerToken, config.secret);
-        const decodedUserId = decoded.userId;
-        const decodedUserPermissions: number = decoded.userId;
-        if (decodedUserId == headerUser) {
-            if (req.params.userId == decodedUserId || decodedUserPermissions >= 3) {
-                req.user = {
-                    id: decodedUserId,
-                    permissions: decodedUserPermissions
-                }
-                next()
+        if (!req.headers || req.headers && !req.headers.authorization) throw 'Missing authorization header.'
+        const requestToken = req.headers.authorization.split(' ')[1];
+        const requestAuthor = req.headers.authorization.split(' ')[0];
+        const decoded: any = verify(requestToken, config.secret);
+        if (requestAuthor != decoded.userId) throw 'Bad user';
+        let userPermissions = [];
+        for (let permission of config.permissions) {
+            const rest = decoded.userPermissions % permission.value;
+            if (rest == 0 && decoded.userPermissions != 0) {
+                userPermissions.push(permission);
+                break;
             }
-            else throw 'bad authentification';
+            if (rest < decoded.userPermissions) {
+                userPermissions.push(permission.permission);
+                decoded.userPermissions = rest
+            }
         }
-        else throw 'bad authentification';
+        req.user = {
+            id: decoded.userId,
+            permissions: userPermissions
+        }
+        next()
     } catch (err) {
         console.log(err)
-        res.status(401).json(error(err));
+        res.status(401).json(error('Requete non authentifiée'));
     }
 }

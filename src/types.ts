@@ -10,7 +10,8 @@ export interface Iconfig {
         readonly password: string;
         readonly database: string;
     }
-    readonly secret: string
+    readonly secret: string;
+    readonly permissions: Array<any>
 }
 //Router
 export interface Iroute {
@@ -21,8 +22,8 @@ export interface Iroute {
 
 //Responce
 export interface IResponce {
-    status: string,
-    timestamp: number,
+    status: string;
+    timestamp: number;
     result?: any
     message?: string
 }
@@ -33,21 +34,21 @@ export interface IObject {
 
 //Member
 export interface IMember {
-    id: number,
-    nickname: string | null,
-    permissions: number,
-    banishment: number,
-    avatar: string,
-    password: string,
-    first_name: string,
-    last_name: string,
-    age: string,
-    phone_number: string,
-    email: string,
+    id: number;
+    nickname: string | null;
+    permissions: number;
+    banishment: number;
+    avatar: string;
+    password: string;
+    first_name: string;
+    last_name: string;
+    age: string;
+    phone_number: string;
+    email: string;
     date_insert?: number
 }
 
 export interface IUserInfos {
-    id: number,
-    permissions: number
+    id: number;
+    permissions: Array<IObject>;
 }

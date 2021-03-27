@@ -1,11 +1,11 @@
-import { MemberClass } from '../../assets/classes/v1/member';
-import { IObject, IMember, IUserInfos } from '../../types';
-import { checkAndChange } from '../../utils/functions';
+import { MemberClass } from '../assets/classes/member';
+import { IObject, IMember, IUserInfos } from '../types';
+import { checkAndChange } from '../utils/functions';
 import { sign } from 'jsonwebtoken';
-import { config } from '../../config';
+import { config } from '../config';
 const Members = new MemberClass();
 
-export function login(req: IObject, res: IObject): void {
+export function auth(req: IObject, res: IObject): void {
     Members.auth(req.body.email, req.body.password)
         .then(result => {
             const token = sign({
@@ -30,7 +30,7 @@ export function login(req: IObject, res: IObject): void {
 export function getMembers(req: IObject, res: IObject): void {
     const userInfos: IUserInfos = {
         id: req.user.id,
-        permissions: req.user.permissions
+        permissions: req.user.permissions || [{ value: 0, permission: 'NONE' }]
     }
     Members.getAll(userInfos, req.params.page)
         .then(result => res.status(200).json(checkAndChange(result)))
@@ -39,17 +39,17 @@ export function getMembers(req: IObject, res: IObject): void {
 export function getMember(req: IObject, res: IObject): void {
     const userInfos: IUserInfos = {
         id: req.user.id,
-        permissions: req.user.permissions
+        permissions: req.user.permissions || [{ value: 0, permission: 'NONE' }]
     }
-    Members.get(req.params.userId)
+    Members.get(userInfos, req.params.userId)
         .then(result => res.status(200).json(checkAndChange(result)))
         .catch(error => res.json(checkAndChange(error)))
 }
 export function createMember(req: IObject, res: IObject): void {
     Members.add(
         req.body.nickname,
-        1,
-        1,
+        0,
+        0,
         req.body.avatar,
         req.body.password,
         req.body.first_name,
@@ -79,9 +79,9 @@ export function updateMember(req: IObject, res: IObject): void {
     }
     const userInfos: IUserInfos = {
         id: req.user.id,
-        permissions: req.user.permissions
+        permissions: req.user.permissions || [{ value: 0, permission: 'NONE' }]
     }
-    Members.put(req.params.userId, newSettings)
+    Members.put(userInfos, req.params.userId, newSettings)
         .then(result => res.status(200).json(checkAndChange(result)))
         .catch(error => res.json(checkAndChange(error)))
 }
@@ -89,7 +89,7 @@ export function updateMember(req: IObject, res: IObject): void {
 export function deleteMember(req: IObject, res: IObject): void {
     const userInfos: IUserInfos = {
         id: req.user.id,
-        permissions: req.user.permissions
+        permissions: req.user.permissions || [{ value: 0, permission: 'NONE' }]
     }
     Members.delete(userInfos, req.params.userId)
         .then(result => res.status(200).json(checkAndChange(result)))

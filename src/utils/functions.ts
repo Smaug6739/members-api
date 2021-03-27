@@ -1,4 +1,4 @@
-import { IResponce } from '../types';
+import { IResponce, IObject } from '../types';
 
 export function success(result: any): IResponce {
     const responce: IResponce = {
@@ -25,4 +25,13 @@ export function isErr(param: any): Boolean {
 export function checkAndChange(this: any, obj: any): void {
     if (this.isErr(obj)) return this.error(obj.message || obj)
     else return this.success(obj)
+}
+
+export function hasPermissions(userPermissions: Array<IObject>, permissionsRequested: Array<string>): Boolean {
+    if (!userPermissions.length) return false;
+    if (userPermissions[0].permission === 'ADMINISTRATOR') return true;
+    for (let permRequested of permissionsRequested) {
+        if (!permissionsRequested.includes(permRequested)) return false;
+    }
+    return true;
 }

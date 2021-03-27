@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import * as MemberCtrl from '../../controllers/v1/members';
+import * as MemberCtrl from '../../controllers/members';
 import { Iroute } from '../../types';
 import auth from '../../middlewares/auth';
 const MemberRouter: Router = Router();
 
 MemberRouter.post('/', MemberCtrl.createMember);
-MemberRouter.post('/login', MemberCtrl.login);
+MemberRouter.post('/auth', MemberCtrl.auth);
 
 MemberRouter.get('/all/:page', auth, MemberCtrl.getMembers);
 MemberRouter.get('/:userId', auth, MemberCtrl.getMember);

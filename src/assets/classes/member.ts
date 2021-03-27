@@ -1,5 +1,6 @@
-import db from '../../../models/db';
-import { IMember, IObject, IUserInfos } from '../../../types';
+import db from '../../models/db';
+import { IMember, IObject, IUserInfos } from '../../types';
+import { hasPermissions } from '../../utils/functions'
 import { hash, compare } from "bcrypt";
 
 export class MemberClass {
@@ -20,9 +21,10 @@ export class MemberClass {
         })
     }
 
-    public get(userId: number): Promise<IObject> {
+    public get(user: IUserInfos, userId: number): Promise<IObject> {
         return new Promise((resolve, reject) => {
             if (!userId) return reject(new Error('Missing userId param.'))
+            if (!hasPermissions(user.permissions, ['VIEW_MEMBERS']) && user.id != userId) return reject(new Error('Bad permissions.'))
             db.query('SELECT * FROM members WHERE id = ? LIMIT 1', [userId], (err, result) => {
                 if (err) return reject(new Error(err.message))
                 resolve(result[0])
@@ -32,9 +34,10 @@ export class MemberClass {
 
     public getAll(user: IUserInfos, page: (string)): Promise<IObject> {
         return new Promise((resolve, reject) => {
+            console.log(user)
             const offset = (parseInt(page) * 20) - 20
             if (!user || !user.id) return reject(new Error('Missing user header.'))
-            if (!user.permissions || user.permissions && user.permissions < 3) return reject(new Error("Bad permissions"))
+            if (!hasPermissions(user.permissions, ['VIEW_MEMBERS'])) return reject(new Error('Bad permissions.'))
             db.query('SELECT * FROM members LIMIT 20 OFFSET ?', [offset], (err, result) => {
                 if (err) return reject(new Error(err.message))
                 resolve(result)
@@ -57,8 +60,8 @@ export class MemberClass {
     ): Promise<IObject | Error> {
         return new Promise<IObject | Error>((resolve, reject) => {
             if (!nickname || nickname && nickname.trim() === '') return reject(new Error("Missing nickaname param."))
-            if (!permissions) return reject(new Error("Missing permissions param."))
-            if (!banishment) return reject(new Error("Missing banishment param."))
+            if (!permissions && permissions != 0) return reject(new Error("Missing permissions param."))
+            if (!banishment && banishment != 0) return reject(new Error("Missing banishment param."))
             if (!avatar || avatar && avatar.trim() === '') return reject(new Error("Missing avatar param."))
             if (!password || password && password.trim() === '') return reject(new Error("Missing password param."))
             if (!first_name || first_name && first_name.trim() === '') return reject(new Error("Missing first name param."))
@@ -89,10 +92,10 @@ export class MemberClass {
                 })
         })
     }
-    public put(userId: number, newSettings: IMember): Promise<IObject | Error> {
+    public put(user: IUserInfos, userId: number, newSettings: IMember): Promise<IObject | Error> {
         return new Promise<IObject | Error>((resolve, reject) => {
+            if (!hasPermissions(user.permissions, ['UPDATE_MEMBERS']) && user.id != userId) return reject(new Error('Bad permissions.'))
             let passwordHash: string;
-            console.log(userId)
             if (newSettings.permissions) newSettings.permissions = parseInt(`${newSettings.permissions}`)
             if (newSettings.banishment) newSettings.banishment = parseInt(`${newSettings.banishment}`)
             if (newSettings.nickname && typeof newSettings.nickname !== 'string') return reject(new Error("nickname must be a string"))
@@ -136,6 +139,7 @@ export class MemberClass {
     }
     public delete(user: IUserInfos, userDelete: number): Promise<IObject | Error> {
         return new Promise<IObject | Error>((resolve, reject) => {
+            if (!hasPermissions(user.permissions, ['DELETE_MEMBERS']) && user.id != userDelete) return reject(new Error('Bad permissions.'))
             db.query('DELETE FROM members WHERE id = ?', [userDelete], (err, result) => {
                 if (err) return reject(new Error(err.message))
                 resolve(result)
