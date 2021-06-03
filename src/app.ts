@@ -23,10 +23,25 @@ export class App {
                 console.log(`Route chargée : /api/v${getFileName.infos.version}/${getFileName.infos.route}`);
             }
         })
+        this.app.set('trust proxy', true)
+        this.app.get('/test', (req: any, res: any) => {
+            const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            console.log('ip : ' + ip); // ip address of the user
+            res.end()
+        })
     }
     private handleMiddlewares(): void {
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(express.json());
+        this.app.use(function (req: any, res: any, next: Function) {
+            const origin = req.headers.origin;
+            res.setHeader('Access-Control-Allow-Origin', origin)
+
+            res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
+            res.setHeader('Access-Control-Allow-Credentials', 'true')
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+            next()
+        })
     }
     public start(): void {
         this.handleMiddlewares();
