@@ -1,8 +1,8 @@
-import { MemberClass } from '../assets/classes/member';
-import { IObject, IMember, IUserInfos } from '../types';
-import { checkAndChange } from '../utils/functions';
+import { MemberClass } from '../../assets/classes/member';
+import { IObject, IMember, IUserInfos } from '../../types';
+import { checkAndChange } from '../../utils/functions';
 import { sign } from 'jsonwebtoken';
-import { config } from '../config';
+import { config } from '../../config';
 const Members = new MemberClass();
 
 export function auth(req: IObject, res: IObject): void {

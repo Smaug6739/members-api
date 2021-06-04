@@ -73,8 +73,3 @@ class Permissions {
 		}
 	}
 }
-
-const test = new Permissions(2)
-
-console.log(test.toArray());
-console.log(test.hasPermissions([16, 'DELETE_MEMBERSs']));

@@ -12,6 +12,10 @@ export interface Iconfig {
     }
     readonly secret: string;
     readonly permissions: Array<any>
+    readonly tokens: {
+        readonly access: number;
+        readonly refresh: number;
+    }
 }
 //Router
 export interface Iroute {
