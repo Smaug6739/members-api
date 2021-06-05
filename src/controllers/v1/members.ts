@@ -1,4 +1,4 @@
-import { MemberClass } from '../../assets/classes/member';
+import { MemberClass } from '../../assets/classes/v1/member';
 import { IObject, IMember, IUserInfos } from '../../types';
 import { checkAndChange } from '../../utils/functions';
 import { sign } from 'jsonwebtoken';
@@ -13,7 +13,7 @@ export function auth(req: IObject, res: IObject): void {
                 expiresIn: 20000,
                 userId: result.id,
                 userPermissions: result.permissions
-            }, config.secret)
+            }, config.tokens.secret)
 
             res.status(200).json(checkAndChange({
                 auth: {

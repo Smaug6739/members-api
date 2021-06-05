@@ -1,14 +1,14 @@
 import { IObject } from '../types';
 import { verify } from 'jsonwebtoken';
 import { config } from '../config';
-import { error } from '../utils/functions';
+import { err } from '../utils/functions';
 
 export default (req: IObject, res: IObject, next: any) => {
     try {
         if (!req.headers || req.headers && !req.headers.authorization) throw 'Missing authorization header.'
         const requestToken = req.headers.authorization.split(' ')[1];
         const requestAuthor = req.headers.authorization.split(' ')[0];
-        const decoded: any = verify(requestToken, config.secret);
+        const decoded: any = verify(requestToken, config.tokens.secret);
         if (requestAuthor != decoded.userId) throw 'Bad user';
         let userPermissions = [];
         for (let permission of config.permissions) {
@@ -27,8 +27,7 @@ export default (req: IObject, res: IObject, next: any) => {
             permissions: userPermissions
         }
         next()
-    } catch (err) {
-        console.log(err)
-        res.status(401).json(error('Requete non authentifiée'));
+    } catch (e) {
+        res.status(401).json(err('Requete non authentifiée'));
     }
 }

@@ -1,6 +1,6 @@
-import db from '../../models/db';
-import { IMember, IObject, IUserInfos } from '../../types';
-import { hasPermissions } from '../../utils/functions'
+import db from '../../../models/db';
+import { IMember, IObject, IUserInfos } from '../../../types';
+import { hasPermissions } from '../../../utils/functions'
 import { hash, compare } from "bcrypt";
 
 export class MemberClass {
@@ -34,7 +34,6 @@ export class MemberClass {
 
     public getAll(user: IUserInfos, page: (string)): Promise<IObject> {
         return new Promise((resolve, reject) => {
-            console.log(user)
             const offset = (parseInt(page) * 20) - 20
             if (!user || !user.id) return reject(new Error('Missing user header.'))
             if (!hasPermissions(user.permissions, ['VIEW_MEMBERS'])) return reject(new Error('Bad permissions.'))

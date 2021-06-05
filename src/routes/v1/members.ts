@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import * as MemberCtrl from '../../controllers/members';
+import * as MemberCtrl from '../../controllers/v1/members';
 import { Iroute } from '../../types';
 import auth from '../../middlewares/auth';
 const MemberRouter: Router = Router();

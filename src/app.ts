@@ -35,7 +35,7 @@ export class App {
         this.app.use(express.json());
         this.app.use(function (req: any, res: any, next: Function) {
             const origin = req.headers.origin;
-            res.setHeader('Access-Control-Allow-Origin', origin)
+            if (origin) res.setHeader('Access-Control-Allow-Origin', origin)
 
             res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
             res.setHeader('Access-Control-Allow-Credentials', 'true')

@@ -10,11 +10,11 @@ export interface Iconfig {
         readonly password: string;
         readonly database: string;
     }
-    readonly secret: string;
     readonly permissions: Array<any>
     readonly tokens: {
         readonly access: number;
         readonly refresh: number;
+        readonly secret: string;
     }
 }
 //Router
@@ -55,4 +55,9 @@ export interface IMember {
 export interface IUserInfos {
     id: number;
     permissions: Array<IObject>;
+}
+
+export interface IResponceError {
+    readonly httpCode?: number;
+    readonly msg?: string;
 }
