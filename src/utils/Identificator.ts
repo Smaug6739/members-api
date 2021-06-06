@@ -71,7 +71,5 @@ export default class Identificator {
 		return res;
 	}
 }
-const id = Identificator.generate(12);
-console.log(id);
-console.log(Identificator.deconstruct(id));
+
 

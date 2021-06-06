@@ -44,7 +44,7 @@ export function isErr(param: any): Boolean {
 
 export function checkAndChange(this: any, obj: any): void {
     if (this.isErr(obj)) return this.err(obj.message || obj)
-    else return this.success(obj)
+    else return this.success1(obj)
 }
 
 export function hasPermissions(userPermissions: Array<IObject>, permissionsRequested: Array<string>): Boolean {

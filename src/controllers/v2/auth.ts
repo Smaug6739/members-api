@@ -11,7 +11,7 @@ export function auth(req: Request, res: Response): void {
 		password: req.body.password
 	})
 		.then(result => res.status(200).json(checkAndChange(result)))
-		.catch(error => res.json(checkAndChange(error)))
+		.catch(e => error(res, e));
 }
 export function refreshToken(req: Request, res: Response) {
 	const token = req.body.refreshToken || req.query.refreshToken

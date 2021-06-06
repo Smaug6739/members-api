@@ -1,9 +1,10 @@
 import db from '../../../models/db';
+import { query } from '../../../models/functions';
 import { IMember, IObject, IUserInfos } from '../../../types';
 import { hasPermissions } from '../../../utils/functions'
-import { hash, compare } from "bcrypt";
+import { hash } from "bcrypt";
 
-export class Member {
+export class Members {
 
 	public getUser(userId: number | string) {
 		return new Promise((resolve, reject) => {
@@ -24,7 +25,9 @@ export class Member {
 			})
 		})
 	}
-
+	protected async getMemberInternal(userId: string) {
+		return await query('SELECT * FROM members WHERE member_id = ?', [userId])
+	}
 	public getAll(user: IUserInfos, page: (string)): Promise<IObject> {
 		return new Promise((resolve, reject) => {
 			console.log(user)
@@ -40,27 +43,23 @@ export class Member {
 
 	public add(
 		nickname: string,
-		permissions: number,
-		banishment: number,
-		avatar: string,
+		permissions: number = 0,
+		banishment: number = 0,
+		avatar: string = '',
 		password: string,
-		first_name: string,
-		last_name: string,
+		first_name: string = '',
+		last_name: string = '',
 		age: string,
-		phone_number: string,
-		email: string,
+		phone_number: string = '',
+		email: string = '',
 		dateInsert: number
 	): Promise<IObject | Error> {
 		return new Promise<IObject | Error>((resolve, reject) => {
 			if (!nickname || nickname && nickname.trim() === '') return reject(new Error("Missing nickaname param."))
 			if (!permissions && permissions != 0) return reject(new Error("Missing permissions param."))
 			if (!banishment && banishment != 0) return reject(new Error("Missing banishment param."))
-			if (!avatar || avatar && avatar.trim() === '') return reject(new Error("Missing avatar param."))
 			if (!password || password && password.trim() === '') return reject(new Error("Missing password param."))
-			if (!first_name || first_name && first_name.trim() === '') return reject(new Error("Missing first name param."))
-			if (!last_name || last_name && last_name.trim() === '') return reject(new Error("Missing last name param."))
 			if (!age) return reject(new Error("Missing age param."))
-			if (!phone_number || phone_number && phone_number.trim() === '') return reject(new Error("Missing phone number param."))
 			if (!email || email && email.trim() === '') return reject(new Error("Missing email param."))
 			if (!dateInsert) return reject(new Error("Missing date insert param."))
 			if (typeof nickname !== 'string') return reject(new Error("nickname must be a string"))
@@ -75,7 +74,7 @@ export class Member {
 			if (typeof email !== 'string') return reject(new Error("email must be a string"))
 			hash(password, 10)
 				.then((hash: string) => {
-					db.query('INSERT INTO members (`nickname`, `permissions`, `banishment`, `avatar`, `password`, `first_name`, `last_name`, `age`, `phone_number`, `email`, `date_insert`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);', [nickname, permissions, banishment, avatar, hash, first_name, last_name, age, phone_number, email, dateInsert], (err, result: Array<IObject>): void => {
+					db.query('INSERT INTO members (`member_username`, `member_permissions`, `member_banishment`, `member_avatar`, `member_password`, `member_first_name`, `member_last_name`, `member_age`, `member_phone_number`, `member_email`, `member_date_insert`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);', [nickname, permissions, banishment, avatar, hash, first_name, last_name, age, phone_number, email, dateInsert], (err, result: Array<IObject>): void => {
 						if (err) return reject(new Error(err.message))
 						return resolve(result)
 					})
