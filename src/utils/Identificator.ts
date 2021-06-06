@@ -73,3 +73,5 @@ export default class Identificator {
 }
 
 
+const id = Identificator.generate(1)
+console.log(Identificator.deconstruct(id));
