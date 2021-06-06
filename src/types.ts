@@ -59,5 +59,10 @@ export interface IUserInfos {
 
 export interface IResponceError {
     readonly httpCode?: number;
-    readonly msg?: string;
+    readonly message?: string;
+}
+export interface IResponceSuccess {
+    readonly httpCode?: number;
+    readonly headers?: Array<string>;
+    readonly result?: any;
 }

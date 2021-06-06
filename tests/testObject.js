@@ -5,6 +5,11 @@ const object = {
 }
 const ob = {
 	d: 'd',
-	a: 'a'
+	e: 'e'
 }
-console.log({ ...object, ...ob });
+const ac = undefined
+console.log({
+	...object, ...ob, result: {
+		...ac
+	}
+});
