@@ -1,5 +1,6 @@
 import { IResponce, IObject, IResponceError, IResponceSuccess } from '../types';
 import { Response } from 'express'
+import { config } from '../config';
 export function success1(result: any): IResponce {
     const responce: IResponce = {
         status: 'success',
@@ -9,8 +10,19 @@ export function success1(result: any): IResponce {
     return responce
 }
 export function success(res: Response, data: IResponceSuccess) {
-    //{ maxAge: 3600000, httpOnly: true, domain: config.domain, secure: process.env.NODE_ENV == 'production' ? true : false, sameSite: 'Lax' })
     if (data.headers && data.headers.length) data.headers.forEach(h => res.header(h))
+    if (data.cookies && data.cookies.length) {
+        data.cookies.forEach(c => {
+            res.cookie(c.name, c.value,
+                {
+                    maxAge: c.maxAge || 3600000,
+                    httpOnly: c.httpOnly || false,
+                    domain: c.domain || '',
+                    secure: config.production || false,
+                    sameSite: c.sameSite || 'Lax'
+                })
+        })
+    }
     res.status(data.httpCode || 200)
     res.json({
         status: 'success',
@@ -54,4 +66,9 @@ export function hasPermissions(userPermissions: Array<IObject>, permissionsReque
         if (!permissionsRequested.includes(permRequested)) return false;
     }
     return true;
+}
+
+// Admin change auth status
+export function updateAuth() {
+
 }

@@ -1,7 +1,8 @@
 import { Request, Response } from 'express'
 import { Authentication } from '../../assets/classes/v2/auth';
-import { checkAndChange, error } from '../../utils/functions';
+import { checkAndChange, error, success } from '../../utils/functions';
 import { config } from '../../config';
+import { IResponceSuccess } from '../../types';
 const Auth = new Authentication(config);
 
 export function auth(req: Request, res: Response): void {
@@ -10,7 +11,7 @@ export function auth(req: Request, res: Response): void {
 		username: req.body.username,
 		password: req.body.password
 	})
-		.then(result => res.status(200).json(checkAndChange(result)))
+		.then((r: IResponceSuccess) => success(res, r))
 		.catch(e => error(res, e));
 }
 export function refreshToken(req: Request, res: Response) {
@@ -18,4 +19,8 @@ export function refreshToken(req: Request, res: Response) {
 	Auth.refreshToken(req.params.userId, token)
 		.then(r => res.status(200).json(checkAndChange(r)))
 		.catch(e => error(res, e))
+}
+
+export function banMember() {
+
 }

@@ -1,6 +1,6 @@
 const EPOCH = 1609455600000;
-const TYPE = 0;
-let INCREMENT = 6000;
+const TYPE = 9;
+let INCREMENT = 500;
 function generate(timestamp = Date.now()) {
 	if (timestamp instanceof Date) timestamp = timestamp.getTime();
 	if (typeof timestamp !== 'number' || isNaN(timestamp)) {
@@ -9,9 +9,9 @@ function generate(timestamp = Date.now()) {
 		);
 	}
 	if (INCREMENT >= 4095) INCREMENT = 0;
-	const BINARY = `${(timestamp - EPOCH).toString(2).padStart(42, '0')}0000100000${(INCREMENT++)
+	const BINARY = `${(timestamp - EPOCH).toString(2).padStart(42, '0')}${(TYPE)
 		.toString(2)
-		.padStart(12, '0')}${(TYPE)
+		.padStart(12, '0')}0000100000${(INCREMENT++)
 			.toString(2)
 			.padStart(12, '0')}`;
 	return binaryToID(BINARY);
@@ -56,11 +56,12 @@ function idToBinary(num) {
 function deconstruct(snowflake) {
 	const BINARY = idToBinary(snowflake).toString(2).padStart(76, '0');
 	const res = {
+		id: snowflake,
 		timestamp: parseInt(BINARY.substring(0, 42), 2) + EPOCH,
-		workerID: parseInt(BINARY.substring(42, 47), 2),
-		processID: parseInt(BINARY.substring(47, 52), 2),
-		increment: parseInt(BINARY.substring(52, 64), 2),
-		type: parseInt(BINARY.substring(64, 76), 2),
+		type: parseInt(BINARY.substring(42, 54), 2),
+		workerID: parseInt(BINARY.substring(54, 59), 2),
+		processID: parseInt(BINARY.substring(59, 64), 2),
+		increment: parseInt(BINARY.substring(64, 76), 2),
 		binary: BINARY,
 	};
 	Object.defineProperty(res, 'date', {
@@ -72,10 +73,5 @@ function deconstruct(snowflake) {
 	return res;
 }
 const id = generate()
-const id2 = generate()
 console.log(id);
-console.log(id2);
 console.log(deconstruct(id));
-console.log(deconstruct(id2));
-
-

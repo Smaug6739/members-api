@@ -9,16 +9,15 @@ export default class Identificator {
 			);
 		}
 		if (this.INCREMENT >= 4095) this.INCREMENT = 0;
-		const BINARY = `${(timestamp - this.EPOCH).toString(2).padStart(42, '0')}0000100000${(this.INCREMENT++)
+		const BINARY = `${(timestamp - this.EPOCH).toString(2).padStart(42, '0')}${(type)
 			.toString(2)
-			.padStart(12, '0')}${(type)
+			.padStart(12, '0')}0000100000${(this.INCREMENT++)
 				.toString(2)
 				.padStart(12, '0')}`;
 		return this.binaryToID(BINARY);
 	}
 	static binaryToID(num: any) {
 		let dec = '';
-
 		while (num.length > 50) {
 			const high = parseInt(num.slice(0, -32), 2);
 			const low = parseInt((high % 10).toString(2) + num.slice(-32), 2);
@@ -55,11 +54,12 @@ export default class Identificator {
 	static deconstruct(snowflake: string) {
 		const BINARY = this.idToBinary(snowflake).toString(2).padStart(76, '0');
 		const res = {
+			id: snowflake,
 			timestamp: parseInt(BINARY.substring(0, 42), 2) + this.EPOCH,
-			workerID: parseInt(BINARY.substring(42, 47), 2),
-			processID: parseInt(BINARY.substring(47, 52), 2),
-			increment: parseInt(BINARY.substring(52, 64), 2),
-			type: parseInt(BINARY.substring(64, 76), 2),
+			type: parseInt(BINARY.substring(42, 54), 2),
+			workerID: parseInt(BINARY.substring(54, 59), 2),
+			processID: parseInt(BINARY.substring(59, 64), 2),
+			increment: parseInt(BINARY.substring(64, 76), 2),
 			binary: BINARY,
 		};
 		Object.defineProperty(res, 'date', {
@@ -71,7 +71,3 @@ export default class Identificator {
 		return res;
 	}
 }
-
-
-const id = Identificator.generate(1)
-console.log(Identificator.deconstruct(id));

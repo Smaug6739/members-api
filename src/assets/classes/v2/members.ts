@@ -6,7 +6,7 @@ import { hash } from "bcrypt";
 
 export class Members {
 
-	public getUser(userId: number | string) {
+	public static getUser(userId: number | string) {
 		return new Promise((resolve, reject) => {
 			if (!userId) return reject(new Error('Missing user id param.'))
 			db.query('SELECT member_id, member_username, member_permissions, member_avatar FROM members WHERE member_id = ? LIMIT 1', [userId], (err, result) => {
@@ -25,7 +25,7 @@ export class Members {
 			})
 		})
 	}
-	protected async getMemberInternal(userId: string) {
+	public static async getMemberInternal(userId: string) {
 		return await query('SELECT * FROM members WHERE member_id = ?', [userId])
 	}
 	public getAll(user: IUserInfos, page: (string)): Promise<IObject> {

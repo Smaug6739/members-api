@@ -3,7 +3,8 @@ import { Router } from "express";
 //Config
 export interface Iconfig {
     readonly port: number;
-    readonly production?: Boolean;
+    readonly domain: string;
+    readonly production: boolean;
     readonly database: {
         readonly host: string;
         readonly user: string;
@@ -63,6 +64,7 @@ export interface IResponceError {
 }
 export interface IResponceSuccess {
     readonly httpCode?: number;
-    readonly headers?: Array<string>;
+    readonly headers?: string[];
+    readonly cookies?: Array<any>;
     readonly result?: any;
 }

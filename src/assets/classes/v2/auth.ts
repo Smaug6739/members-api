@@ -3,46 +3,65 @@ import { compare } from 'bcrypt'
 
 import db from '../../../models/db';
 import { query } from '../../../models/functions';
-import { IObject } from '../../../types';
+import { IObject, IResponceSuccess, IResponceError } from '../../../types';
 import { Members } from './members';
-export const Authentication = class extends Members {
+export const Authentication = class {
 	private config;
 	constructor(config: any) {
-		super()
 		this.config = config
 	}
-	async logUser(userInfos: IObject) {
+	async logUser(userInfos: IObject): Promise<IResponceSuccess | IResponceError> {
 		return new Promise((resolve, reject) => {
-			console.log(userInfos);
-
 			if (!userInfos.userId) return reject({ httpCode: 400, message: 'Missing user id' });
 			if (!userInfos || userInfos && !userInfos.username) return reject({ httpCode: 400, message: 'Missing username.' });
 			if (!userInfos || userInfos && !userInfos.password) return reject({ httpCode: 400, message: 'Missing password.' });
 			(async () => {
 				try {
-					const member: any = await this.getMemberInternal(userInfos.userId)
-
+					const member: any = await Members.getMemberInternal(userInfos.userId)
 					const compared = await compare(userInfos.password, member[0].member_password);
 					if (!compared) return reject({ httpCode: 406, message: 'Invalid password.' })
 					const userAuth = await query('SELECT * FROM members_auth WHERE member_auth_id = ? LIMIT 1', [userInfos.userId])
 					if (!userAuth || !userAuth[0]) {
+						console.log('User not existing');
 						// User not existing
 						const accessToken = this.generateToken('access', {
 							userId: userInfos.userId,
 							userPermissions: member[0].member_permissions
 						})
-						const refreshToken = this.generateToken('refresh')
-						await query('INSERT INTO members_auth (`member_auth_id`, `member_auth_refresh_token`, `member_auth_expire_token`, `member_auth_login_time`, `member_auth_logout_time`, `member_auth_security`) VALUES (?,?,?,?,?,?)', [member[0].member_id, refreshToken.token, refreshToken.expiresAt, Date.now(), 0, 1])
+						const refreshToken = this.generateToken('refresh');
+						const logTime = Date.now()
+						await query('INSERT INTO members_auth (`member_auth_id`, `member_auth_refresh_token`, `member_auth_expire_token`, `member_auth_login_time`, `member_auth_logout_time`, `member_auth_security`) VALUES (?,?,?,?,?,?)', [member[0].member_id, refreshToken.token, refreshToken.expiresAt, logTime, 0, 1])
 						return resolve({
-							auth: true,
-							tokens: {
-								access: accessToken.token,
-								refresh: refreshToken.token
+							cookies: [
+								{
+									maxAge: accessToken.expiresIn * 1000,
+									httpOnly: true,
+									domain: this.config.domain,
+									name: 'accessToken',
+									value: accessToken.token
+								},
+								{
+									maxAge: refreshToken.expiresIn * 1000,
+									httpOnly: true,
+									domain: this.config.domain,
+									name: 'refreshToken',
+									value: refreshToken.token
+								}
+							],
+							result: {
+								auth: true,
+								tokens: {
+									access: accessToken.token,
+									refresh: refreshToken.token
+								},
+								refresh_token_expires: refreshToken.expiresAt,
+								login_time: logTime
 							}
 						})
 
 					} else if (userAuth[0].member_auth_expire_token < Date.now()) {
 						// Refresh token was expired.
+						console.log('Refresh token was expired.');
 						const accessToken = this.generateToken('access', {
 							userId: userInfos.userId,
 							userPermissions: member[0].member_permissions
@@ -50,27 +69,68 @@ export const Authentication = class extends Members {
 						const refreshToken = this.generateToken('refresh')
 						await query('UPDATE members_auth SET member_auth_refresh_token = ?, member_auth_expire_token = ?, member_auth_login_time = ?', [refreshToken.token, refreshToken.expiresAt, Date.now()])
 						resolve({
-							auth: true,
-							tokens: {
-								access: accessToken.token,
-								refresh: refreshToken.token
+							cookies: [
+								{
+									maxAge: accessToken.expiresIn * 1000,
+									httpOnly: true,
+									domain: this.config.domain,
+									name: 'accessToken',
+									value: accessToken.token
+								},
+								{
+									maxAge: refreshToken.expiresIn * 1000,
+									httpOnly: true,
+									domain: this.config.domain,
+									name: 'refreshToken',
+									value: refreshToken.token
+								}
+							],
+							result: {
+								auth: true,
+								tokens: {
+									access: accessToken.token,
+									refresh: refreshToken.token
+								},
+								refresh_token_expires: refreshToken.expiresAt,
+								login_time: userAuth[0].member_auth_login_time
 							}
 						})
 					} else {
 						// Create new access token.
+						console.log('Create new access token');
 						const accessToken = this.generateToken('access', {
 							userId: userInfos.userId,
 							userPermissions: member[0].member_permissions
 						})
 						resolve({
-							auth: true,
-							tokens: {
-								access: accessToken.token,
-								refresh: userAuth[0].member_auth_refresh_token,
+							cookies: [
+								{
+									maxAge: accessToken.expiresIn * 1000,
+									httpOnly: true,
+									domain: this.config.domain,
+									name: 'accessToken',
+									value: accessToken.token
+								},
+								{
+									maxAge: ((userAuth[0].member_auth_expire_token - Date.now())), // MS
+									httpOnly: true,
+									domain: this.config.domain,
+									name: 'refreshToken',
+									value: userAuth[0].member_auth_refresh_token
+								}
+							],
+							result: {
+								auth: true,
+								tokens: {
+									access: accessToken.token,
+									refresh: userAuth[0].member_auth_refresh_token,
+								},
+								refresh_token_expires: userAuth[0].member_auth_expire_token,
+								login_time: userAuth[0].member_auth_login_time
 							}
 						})
 					}
-				} catch (e) {
+				} catch (e: any) {
 					reject({
 						httpCode: e.httpCode ? e.httpCode : 500,
 						message: e.message ? e.message : 'An error occurred.'
@@ -90,7 +150,7 @@ export const Authentication = class extends Members {
 				if (result[0].member_auth_refresh_token !== refreshToken) return reject({ httpCode: 406, message: 'Invalid refresh token.' });
 				(async () => {
 					try {
-						const member: any = await this.getUser(userId);
+						const member: any = await Members.getUser(userId);
 						const accessToken = this.generateToken('access', {
 							userId: userId,
 							userPermissions: member.member_permissions
@@ -101,7 +161,7 @@ export const Authentication = class extends Members {
 								access: accessToken.token,
 							}
 						})
-					} catch (e) {
+					} catch (e: any) {
 						reject({
 							httpCode: e.httpCode ? e.httpCode : 500,
 							message: e.message ? e.message : 'An error occurred.'

@@ -1,10 +1,11 @@
 import { Iconfig } from './types';
 export const config: Iconfig = {
   port: 3000,
+  domain: 'localhost',
   production: false,
   database: {
     host: 'localhost',
-    user: '<user>>',
+    user: '<user>',
     password: '<password>',
     database: '<db_name>'
   },
