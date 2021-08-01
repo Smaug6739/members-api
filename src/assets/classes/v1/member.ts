@@ -1,4 +1,4 @@
-import db from '../../../models/db';
+import db from '../../../database/db';
 import { IMember, IObject, IUserInfos } from '../../../types';
 import { hasPermissions } from '../../../utils/functions'
 import { hash, compare } from "bcrypt";
@@ -21,7 +21,7 @@ export class MemberClass {
         })
     }
 
-    public get(user: IUserInfos, userId: number): Promise<IObject> {
+    public get(user: any, userId: number): Promise<IObject> {
         return new Promise((resolve, reject) => {
             if (!userId) return reject(new Error('Missing userId param.'))
             if (!hasPermissions(user.permissions, ['VIEW_MEMBERS']) && user.id != userId) return reject(new Error('Bad permissions.'))
@@ -91,7 +91,7 @@ export class MemberClass {
                 })
         })
     }
-    public put(user: IUserInfos, userId: number, newSettings: IMember): Promise<IObject | Error> {
+    public put(user: any, userId: number, newSettings: IMember): Promise<IObject | Error> {
         return new Promise<IObject | Error>((resolve, reject) => {
             if (!hasPermissions(user.permissions, ['UPDATE_MEMBERS']) && user.id != userId) return reject(new Error('Bad permissions.'))
             let passwordHash: string;
@@ -136,7 +136,7 @@ export class MemberClass {
             })
         })
     }
-    public delete(user: IUserInfos, userDelete: number): Promise<IObject | Error> {
+    public delete(user: any, userDelete: number): Promise<IObject | Error> {
         return new Promise<IObject | Error>((resolve, reject) => {
             if (!hasPermissions(user.permissions, ['DELETE_MEMBERS']) && user.id != userDelete) return reject(new Error('Bad permissions.'))
             db.query('DELETE FROM members WHERE id = ?', [userDelete], (err, result) => {

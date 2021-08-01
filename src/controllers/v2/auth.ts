@@ -1,8 +1,8 @@
-import { Request, Response } from 'express'
 import { Authentication } from '../../assets/classes/v2/auth';
 import { checkAndChange, error, success } from '../../utils/functions';
 import { config } from '../../config';
-import { IResponceSuccess } from '../../types';
+import type { Request, Response } from 'express'
+import type { IResponceSuccess, IUserInfos } from '../../types';
 const Auth = new Authentication(config);
 
 export function auth(req: Request, res: Response): void {
@@ -14,13 +14,18 @@ export function auth(req: Request, res: Response): void {
 		.then((r: IResponceSuccess) => success(res, r))
 		.catch(e => error(res, e));
 }
-export function refreshToken(req: Request, res: Response) {
+export function refreshToken(req: any, res: Response) {
 	const token = req.body.refreshToken || req.query.refreshToken
-	Auth.refreshToken(req.params.userId, token)
+	const requestorUser: IUserInfos = {
+		id: req.user.id,
+		permissions: req.user.permissions || null
+	}
+	Auth.refreshToken(requestorUser, token)
 		.then(r => res.status(200).json(checkAndChange(r)))
 		.catch(e => error(res, e))
 }
 
-export function banMember() {
+// Admin change auth status
+export function updateAuth() {
 
 }

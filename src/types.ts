@@ -54,8 +54,8 @@ export interface IMember {
 }
 
 export interface IUserInfos {
-    id: number;
-    permissions: Array<IObject>;
+    id: string;
+    permissions: Array<string>;
 }
 
 export interface IResponceError {

@@ -1,14 +1,28 @@
 import { sign } from 'jsonwebtoken';
 import { compare } from 'bcrypt'
 
-import db from '../../../models/db';
-import { query } from '../../../models/functions';
-import { IObject, IResponceSuccess, IResponceError } from '../../../types';
+import db from '../../../database/db';
+import { query } from '../../../database/functions';
+import { IObject, IResponceSuccess, IResponceError, IUserInfos } from '../../../types';
 import { Members } from './members';
 export const Authentication = class {
 	private config;
 	constructor(config: any) {
 		this.config = config
+	}
+	private generateToken(type: string, data?: IObject) {
+		let tokenTime = 0;
+		if (type === 'access') tokenTime = this.config.tokens.access
+		if (type === 'refresh') tokenTime = this.config.tokens.refresh
+		const token = sign({
+			expiresIn: tokenTime,
+			...data,
+		}, this.config.tokens.secret)
+		return {
+			token: token,
+			expiresIn: tokenTime,
+			expiresAt: Date.now() + tokenTime * 1000
+		};
 	}
 	async logUser(userInfos: IObject): Promise<IResponceSuccess | IResponceError> {
 		return new Promise((resolve, reject) => {
@@ -139,20 +153,20 @@ export const Authentication = class {
 			})()
 		})
 	}
-	refreshToken(userId: string | number, refreshToken: string) {
+	refreshToken(requestorUser: IUserInfos, refreshToken: string) {
 		return new Promise((resolve, reject) => {
-			if (!userId) return reject({ httpCode: 400, message: 'Missing user id.' })
+			if (!requestorUser.id) return reject({ httpCode: 400, message: 'Missing user id.' })
 			if (!refreshToken) return reject({ httpCode: 400, message: 'Missing refresh token.' })
-			db.query('SELECT * FROM members_auth WHERE member_auth_id = ?', [userId], (err, result) => {
+			db.query('SELECT * FROM members_auth WHERE member_auth_id = ?', [requestorUser.id], (err, result) => {
 				if (err) return reject(err)
 				if (!result || result && !result[0]) return reject({ httpCode: 406, message: 'User not auth.' })
 				if (result[0].member_auth_expire_token < Date.now()) return reject({ httpCode: 406, message: 'The session has expired.' })
 				if (result[0].member_auth_refresh_token !== refreshToken) return reject({ httpCode: 406, message: 'Invalid refresh token.' });
 				(async () => {
 					try {
-						const member: any = await Members.getUser(userId);
+						const member: any = await Members.getUserById(requestorUser, requestorUser.id);
 						const accessToken = this.generateToken('access', {
-							userId: userId,
+							userId: requestorUser.id,
 							userPermissions: member.member_permissions
 						})
 						resolve({
@@ -171,18 +185,7 @@ export const Authentication = class {
 			})
 		})
 	}
-	generateToken(type: string, data?: IObject) {
-		let tokenTime = 0;
-		if (type === 'access') tokenTime = this.config.tokens.access
-		if (type === 'refresh') tokenTime = this.config.tokens.refresh
-		const token = sign({
-			expiresIn: tokenTime,
-			...data,
-		}, this.config.tokens.secret)
-		return {
-			token: token,
-			expiresIn: tokenTime,
-			expiresAt: Date.now() + tokenTime * 1000
-		};
+	updateAuth(admin: Object, auth: Object, newSettings: Object) {
+
 	}
 }

@@ -1,6 +1,8 @@
 import { Members } from '../../assets/classes/v2/members';
 import { IObject, IMember, IUserInfos } from '../../types';
-import { checkAndChange } from '../../utils/functions';
+import { checkAndChange, success, error } from '../../utils/functions';
+
+import type { Response } from 'express';
 const MembersClass = new Members();
 
 
@@ -14,14 +16,29 @@ export function getMembers(req: IObject, res: IObject): void {
 		.then(result => res.status(200).json(checkAndChange(result)))
 		.catch(error => res.json(checkAndChange(error)))
 }
-export function getMember(req: IObject, res: IObject): void {
-	const userInfos: IUserInfos = {
-		id: req.user.id,
-		permissions: req.user.permissions || [{ value: 0, permission: 'NONE' }]
+export function getUser(req: any, res: Response): void {
+	const userId = req.params.userId as string;
+	if (userId) {
+		const requestorUser: IUserInfos = {
+			id: req.user.id,
+			permissions: req.user.permissions || null
+		}
+		Members.getUserById(requestorUser, userId)
+			.then(result => success(res, result))
+			.catch(err => error(res, err))
 	}
-	MembersClass.getMember(userInfos, req.params.userId)
-		.then(result => res.status(200).json(checkAndChange(result)))
-		.catch(error => res.json(checkAndChange(error)))
+}
+export function getUsers(req: any, res: Response): void {
+	const requestorUser: IUserInfos = {
+		id: req.user.id,
+		permissions: req.user.permissions || null
+	}
+	MembersClass.getUsers(requestorUser, {
+		limit: req.query.limit,
+		maxPerPage: req.query.maxPerPage,
+		page: req.query.page,
+	})
+
 }
 export function createMember(req: IObject, res: IObject): void {
 	MembersClass.add(

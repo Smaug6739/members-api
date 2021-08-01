@@ -45,7 +45,7 @@ export function error(res: Response, error: IResponceError): void {
     res.status(error.httpCode || 500);
     res.json({
         status: 'error',
-        httpCode: error.httpCode || 200,
+        httpCode: error.httpCode || 500,
         timestamp: Date.now(),
         message: error.message || 'An error occurred.'
     })
@@ -59,16 +59,12 @@ export function checkAndChange(this: any, obj: any): void {
     else return this.success1(obj)
 }
 
-export function hasPermissions(userPermissions: Array<IObject>, permissionsRequested: Array<string>): Boolean {
-    if (!userPermissions.length) return false;
-    if (userPermissions[0].permission === 'ADMINISTRATOR') return true;
-    for (let permRequested of permissionsRequested) {
-        if (!permissionsRequested.includes(permRequested)) return false;
+export function hasPermissions(userPermissions: string[], permissionsRequested: string[]): Boolean {
+    if (!userPermissions || userPermissions.length) return false;
+    if (userPermissions.includes('ADMINISTRATOR')) return true;
+    for (const permRequested of permissionsRequested) {
+        if (!userPermissions.includes(permRequested)) return false;
     }
     return true;
 }
 
-// Admin change auth status
-export function updateAuth() {
-
-}

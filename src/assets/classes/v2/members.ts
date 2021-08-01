@@ -1,28 +1,40 @@
-import db from '../../../models/db';
-import { query } from '../../../models/functions';
-import { IMember, IObject, IUserInfos } from '../../../types';
-import { hasPermissions } from '../../../utils/functions'
 import { hash } from "bcrypt";
+
+import db from '../../../database/db';
+import { query } from '../../../database/functions';
+import { hasPermissions } from '../../../permissions/functions';
+import { PermissionsError, MissingError, DataTypeError, InternalError } from '../../../errors/index';
+
+import type { IMember, IObject, IUserInfos } from '../../../types';
+import type { IMetaGetUsers } from '../../../typescript/interfaces';
 
 export class Members {
 
-	public static getUser(userId: number | string) {
+	public static getUserById(requestorUser: IUserInfos, requestedUser: string): Promise<IObject> {
 		return new Promise((resolve, reject) => {
-			if (!userId) return reject(new Error('Missing user id param.'))
-			db.query('SELECT member_id, member_username, member_permissions, member_avatar FROM members WHERE member_id = ? LIMIT 1', [userId], (err, result) => {
-				if (err) return reject(err)
+			if (requestorUser.id != requestedUser && !hasPermissions(requestorUser.permissions, ['VIEW_MEMBERS'])) return reject(new PermissionsError(['VIEW_MEMBERS']))
+			db.query('SELECT * FROM members WHERE id = ? LIMIT 1', [requestedUser], (err, result) => {
+				if (err) return reject({
+					httpCode: 500,
+					message: 'Database error'
+				})
 				resolve(result[0])
 			})
 		})
 	}
-	public getMember(user: IUserInfos, userId: number): Promise<IObject> {
-		return new Promise((resolve, reject) => {
-			if (!userId) return reject(new Error('Missing userId param.'))
-			if (!hasPermissions(user.permissions, ['VIEW_MEMBERS']) && user.id != userId) return reject(new Error('Bad permissions.'))
-			db.query('SELECT * FROM members WHERE id = ? LIMIT 1', [userId], (err, result) => {
-				if (err) return reject(new Error(err.message))
-				resolve(result[0])
-			})
+	public getUsers(requestorUser: IUserInfos, meta: IMetaGetUsers) {
+		return new Promise(async (resolve, reject) => {
+			if (!hasPermissions(requestorUser.permissions, ['VIEW_MEMBERS'])) return reject(new PermissionsError(['VIEW_MEMBERS']))
+			if (!meta.page) meta.page = '1';
+			if (!meta.maxPerPage) meta.maxPerPage = meta.limit || '50';
+			const maxPerPage = parseInt(meta.maxPerPage);
+			const page = parseInt(meta.page);
+			if (isNaN(maxPerPage)) return reject(new DataTypeError([{ name: meta.maxPerPage, expected: 'number' }]));
+			if (isNaN(page)) return reject(new DataTypeError([{ name: meta.page, expected: 'number' }]));
+			const skip = (parseInt(meta.page) * parseInt(meta.maxPerPage)) - parseInt(meta.maxPerPage);
+			const result = await query('SELECT member_id, member_username, member_permissions, member_banishement, member_avatar, member_first_name, member_last_name, member_age, member_phone_number, member_email, memner_date_insert LIMIT ? OFFSET ?', [maxPerPage, skip]);
+			if (result instanceof InternalError) return reject(new InternalError());
+			return resolve(result)
 		})
 	}
 	public static async getMemberInternal(userId: string) {
@@ -30,7 +42,6 @@ export class Members {
 	}
 	public getAll(user: IUserInfos, page: (string)): Promise<IObject> {
 		return new Promise((resolve, reject) => {
-			console.log(user)
 			const offset = (parseInt(page) * 20) - 20
 			if (!user || !user.id) return reject(new Error('Missing user header.'))
 			if (!hasPermissions(user.permissions, ['VIEW_MEMBERS'])) return reject(new Error('Bad permissions.'))
@@ -84,7 +95,7 @@ export class Members {
 				})
 		})
 	}
-	public put(user: IUserInfos, userId: number, newSettings: IMember): Promise<IObject | Error> {
+	public put(user: IUserInfos, userId: string, newSettings: IMember): Promise<IObject | Error> {
 		return new Promise<IObject | Error>((resolve, reject) => {
 			if (!hasPermissions(user.permissions, ['UPDATE_MEMBERS']) && user.id != userId) return reject(new Error('Bad permissions.'))
 			let passwordHash: string;
@@ -129,7 +140,7 @@ export class Members {
 			})
 		})
 	}
-	public delete(user: IUserInfos, userDelete: number): Promise<IObject | Error> {
+	public delete(user: IUserInfos, userDelete: string): Promise<IObject | Error> {
 		return new Promise<IObject | Error>((resolve, reject) => {
 			if (!hasPermissions(user.permissions, ['DELETE_MEMBERS']) && user.id != userDelete) return reject(new Error('Bad permissions.'))
 			db.query('DELETE FROM members WHERE id = ?', [userDelete], (err, result) => {
