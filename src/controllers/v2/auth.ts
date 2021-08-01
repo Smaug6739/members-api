@@ -24,8 +24,14 @@ export function refreshToken(req: any, res: Response) {
 		.then(r => res.status(200).json(checkAndChange(r)))
 		.catch(e => error(res, e))
 }
-
-// Admin change auth status
-export function updateAuth() {
-
+export function updateAuth(req: any, res: Response) {
+	const target = req.params.userId;
+	const requestorUser: IUserInfos = {
+		id: req.user.id,
+		permissions: req.user.permissions || null
+	}
+	const changes = {
+		changeRefreshToken: req.body.changeToken
+	}
+	Auth.updateAuth(requestorUser, target, changes)
 }

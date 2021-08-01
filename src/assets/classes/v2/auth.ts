@@ -3,7 +3,9 @@ import { compare } from 'bcrypt'
 
 import db from '../../../database/db';
 import { query } from '../../../database/functions';
+import { hasPermissions } from '../../../permissions/functions';
 import { IObject, IResponceSuccess, IResponceError, IUserInfos } from '../../../types';
+import { InternalError, InvalidError, MissingError, PermissionsError, RequestError } from '../../../errors/index';
 import { Members } from './members';
 export const Authentication = class {
 	private config;
@@ -26,9 +28,9 @@ export const Authentication = class {
 	}
 	async logUser(userInfos: IObject): Promise<IResponceSuccess | IResponceError> {
 		return new Promise((resolve, reject) => {
-			if (!userInfos.userId) return reject({ httpCode: 400, message: 'Missing user id' });
-			if (!userInfos || userInfos && !userInfos.username) return reject({ httpCode: 400, message: 'Missing username.' });
-			if (!userInfos || userInfos && !userInfos.password) return reject({ httpCode: 400, message: 'Missing password.' });
+			if (!userInfos.userId) return reject(new MissingError([{ name: 'userId', type: 'parameter' }]));
+			if (!userInfos || userInfos && !userInfos.username) return reject(new MissingError([{ name: 'username', type: 'parameter' }]));
+			if (!userInfos || userInfos && !userInfos.password) return reject(new MissingError([{ name: 'password', type: 'parameter' }]));
 			(async () => {
 				try {
 					const member: any = await Members.getMemberInternal(userInfos.userId)
@@ -36,7 +38,6 @@ export const Authentication = class {
 					if (!compared) return reject({ httpCode: 406, message: 'Invalid password.' })
 					const userAuth = await query('SELECT * FROM members_auth WHERE member_auth_id = ? LIMIT 1', [userInfos.userId])
 					if (!userAuth || !userAuth[0]) {
-						console.log('User not existing');
 						// User not existing
 						const accessToken = this.generateToken('access', {
 							userId: userInfos.userId,
@@ -145,10 +146,7 @@ export const Authentication = class {
 						})
 					}
 				} catch (e: any) {
-					reject({
-						httpCode: e.httpCode ? e.httpCode : 500,
-						message: e.message ? e.message : 'An error occurred.'
-					});
+					reject(new InternalError());
 				}
 			})()
 		})
@@ -159,9 +157,9 @@ export const Authentication = class {
 			if (!refreshToken) return reject({ httpCode: 400, message: 'Missing refresh token.' })
 			db.query('SELECT * FROM members_auth WHERE member_auth_id = ?', [requestorUser.id], (err, result) => {
 				if (err) return reject(err)
-				if (!result || result && !result[0]) return reject({ httpCode: 406, message: 'User not auth.' })
-				if (result[0].member_auth_expire_token < Date.now()) return reject({ httpCode: 406, message: 'The session has expired.' })
-				if (result[0].member_auth_refresh_token !== refreshToken) return reject({ httpCode: 406, message: 'Invalid refresh token.' });
+				if (!result || result && !result[0]) return reject(new InvalidError(['User not auth.']))
+				if (result[0].member_auth_expire_token < Date.now()) return reject(new RequestError(401, 'The session has expired.'))
+				if (result[0].member_auth_refresh_token !== refreshToken) return reject(new RequestError(406, 'Invalid refresh token.'));
 				(async () => {
 					try {
 						const member: any = await Members.getUserById(requestorUser, requestorUser.id);
@@ -176,16 +174,23 @@ export const Authentication = class {
 							}
 						})
 					} catch (e: any) {
-						reject({
-							httpCode: e.httpCode ? e.httpCode : 500,
-							message: e.message ? e.message : 'An error occurred.'
-						})
+						reject(new InternalError())
 					}
 				})()
 			})
 		})
 	}
-	updateAuth(admin: Object, auth: Object, newSettings: Object) {
-
+	updateAuth(requestorUser: IUserInfos, target: string, changes: any): Promise<void | InternalError> {
+		return new Promise(async (resolve, reject) => {
+			if (requestorUser.id != target && !hasPermissions(requestorUser.permissions, ['MANAGE_AUTHS'])) return reject(new PermissionsError(['MANAGE_AUTHS']));
+			if (changes.changeRefreshToken) {
+				try {
+					await query('UPDATE FROM member_auth SET member_auth_refresh_token = ? WHERE member_auth_id = ? LIMIT 1', ['', target]);
+				} catch {
+					return reject(new InternalError())
+				}
+			}
+			resolve()
+		})
 	}
 }
